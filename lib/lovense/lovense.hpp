@@ -2,8 +2,7 @@
 
 #include <Arduino.h>
 
-#include <BLEDevice.h>
-#include <BLE2902.h>
+#include <NimBLEDevice.h>
 
 
 // Currently emulating the Lovense Lush (v1).
@@ -20,18 +19,18 @@ namespace Lovense {
     // oh my goodness it's SUPPOSED to be like this, it took me way too long cause it's BACKWARDS :((
     // RX = where you SEND data
     // TX = where you RECEIVE data
-    extern BLECharacteristic *pCharRx;
-    extern BLECharacteristic *pCharTx;
+    extern NimBLECharacteristic *pCharRx;
+    extern NimBLECharacteristic *pCharTx;
 
 
-    class ServerCallback : public BLEServerCallbacks {
-        void onConnect(BLEServer *pServer) override;
-        void onDisconnect(BLEServer *pServer) override;
+    class ServerCallback : public NimBLEServerCallbacks {
+        void onConnect(NimBLEServer *pServer) override;
+        void onDisconnect(NimBLEServer *pServer) override;
     };
 
 
-    class CharCallback : public BLECharacteristicCallbacks {
-        void onWrite(BLECharacteristic *pChar);
+    class CharCallback : public NimBLECharacteristicCallbacks {
+        void onWrite(NimBLECharacteristic *pChar);
     };
 
 

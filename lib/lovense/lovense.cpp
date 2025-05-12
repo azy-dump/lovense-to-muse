@@ -1,41 +1,64 @@
 #include "lovense.hpp"
 
+#include <muse.hpp>
 
 
 namespace Lovense {
-    BLECharacteristic *pCharRx = nullptr;
-    BLECharacteristic *pCharTx = nullptr;
+    NimBLECharacteristic *pCharRx = nullptr;
+    NimBLECharacteristic *pCharTx = nullptr;
 
 
-    void ServerCallback::onConnect(BLEServer *pServer) {
+    void ServerCallback::onConnect(NimBLEServer *pServer) {
         Serial.println("A device connected to the Lovense interface.");
     }
 
-    void ServerCallback::onDisconnect(BLEServer *pServer) {
+    void ServerCallback::onDisconnect(NimBLEServer *pServer) {
         Serial.println("A device disconnected from the Lovense interface.");
     }
 
 
-    void CharCallback::onWrite(BLECharacteristic *pChar) {
+    void CharCallback::onWrite(NimBLECharacteristic *pChar) {
         if (pChar != pCharTx) {
             Serial.println("Wrong characteristic.");
             return;
         }
 
-        std::string input = pChar->getValue();
-        Serial.println(input.c_str());
+        Serial.println("=== REQUEST RECEIVED TO LOVENSE INTERFACE ===");
 
-        if (input == "DeviceType;") {
-            Serial.println("$Responding to Device Enquiry");
-            std::string wawa = "S:11:004B123A2E62;";
-            pCharRx->setValue(wawa);
-            pCharRx->notify();
-        } else {
-            Serial.println("$Wawa");
-            std::string wawa = "ERR;";
-            pCharRx->setValue(wawa);
-            pCharRx->notify();
+        std::string request = pChar->getValue();
+        Serial.println(request.c_str());
+
+        std::string response = "";
+
+        if (request == "DeviceType;") {
+            Serial.println("Responding with device type...");
+            response = "S:11:004B123A2E62;";
+            
         }
+        else if (request.rfind("Vibrate:", 0) == 0) {
+            Serial.println("Setting vibration level...");
+
+            size_t startPos = request.find(":") + 1;
+            size_t endPos = request.find(";");
+
+            if (startPos == std::string::npos || endPos == std::string::npos || endPos <= startPos) {
+                Serial.println("Invalid level.");
+                return;
+            }
+
+            int vibration = std::stoi(request.substr(startPos, endPos - startPos));
+            Serial.println(String("Received vibration level: ") + vibration);
+
+            Muse::set_intensity_lovense(vibration);
+        }
+        else {
+            Serial.println("Unknown request.");
+            response = "ERR;";
+        }
+
+        Serial.println(String("Responding with payload: ") + response.c_str());
+        pCharRx->setValue(response);
+        pCharRx->notify();
     }
 
 
@@ -43,28 +66,28 @@ namespace Lovense {
         Serial.println("=== Initializing BLE Server for Lovense ===");
         Serial.println(String("Name: ") + LOVENSE_NAME);
 
-        BLEDevice::init(LOVENSE_NAME);
+        NimBLEDevice::init(LOVENSE_NAME);
 
         Serial.println("Creating server...");
-        BLEServer *pServer = BLEDevice::createServer();
+        NimBLEServer *pServer = NimBLEDevice::createServer();
         pServer->setCallbacks(new ServerCallback());
 
         Serial.println(String("Creating service with UUID ") + LOVENSE_SERVICE_UUID);
-        BLEService *pService = pServer->createService(LOVENSE_SERVICE_UUID);
+        NimBLEService *pService = pServer->createService(LOVENSE_SERVICE_UUID);
 
 
         Serial.println(String("Creating RX characteristic with UUID ") + LOVENSE_CHAR_RX_UUID);
         pCharRx = pService->createCharacteristic(
             LOVENSE_CHAR_RX_UUID,
-            BLECharacteristic::PROPERTY_NOTIFY
+            NIMBLE_PROPERTY::NOTIFY
         );
-        pCharRx->addDescriptor(new BLE2902());
+        // pCharRx->addDescriptor(new BLE2902());
         pCharRx->setCallbacks(new CharCallback());
     
         Serial.println(String("Creating TX characteristic with UUID ") + LOVENSE_CHAR_TX_UUID);
         pCharTx = pService->createCharacteristic(
             LOVENSE_CHAR_TX_UUID,
-            BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR
+            NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
         );
         pCharTx->setCallbacks(new CharCallback());
         
@@ -73,14 +96,14 @@ namespace Lovense {
         pService->start();
 
 
-        BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+        NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
 
         pAdvertising->addServiceUUID(LOVENSE_SERVICE_UUID);
         pAdvertising->setScanResponse(true);
         pAdvertising->setMinPreferred(0x0);
 
         Serial.println("Starting advertising...");
-        BLEDevice::startAdvertising();
+        NimBLEDevice::startAdvertising();
 
         Serial.println("Initialized. Waiting for connection.");
     }
