@@ -66,7 +66,7 @@ namespace Muse {
             set_manufacturer_data(_intensity_value);
             // _last_set_intensity_value = _intensity_value;
             // }
-            delay(1000);
+            delay(100);
         }
         
         // advertise stop all channels for a little while
