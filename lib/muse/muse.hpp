@@ -14,8 +14,6 @@ namespace Muse {
     extern const char* TAG;
     extern uint16_t MANUFACTURER_ID;
 
-    extern uint8_t _intensity_value;
-
     extern bool _stopping;
 
     extern uint8_t mf_data_list[][MUSE_MF_DATA_LENGTH];

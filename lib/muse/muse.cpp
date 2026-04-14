@@ -93,7 +93,7 @@ namespace Muse {
             }
         }
 
-        // Serial.println(String("S: ") + upper_stopwatch_max + " " + upper_stopwatch + " | " + lower_stopwatch + " " + lower_stopwatch_max + " ||| " + is_using_upper);
+        Serial.println(String("S: ") + upper_stopwatch_max + " " + upper_stopwatch + " | " + lower_stopwatch + " " + lower_stopwatch_max + " ||| " + is_using_upper);
     }
 
     void advertising_task(void *pvParameters) {
@@ -101,8 +101,8 @@ namespace Muse {
 
         while (!_stopping) {
             tick();
-            delay(70);
-            // set_manufacturer_data(_intensity_value);
+            delay(100);
+            // set_manufacturer_data(1);
             // delay(100);
         }
         
