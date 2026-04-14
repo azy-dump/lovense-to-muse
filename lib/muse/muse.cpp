@@ -93,7 +93,7 @@ namespace Muse {
             }
         }
 
-        Serial.println(String("S: ") + upper_stopwatch_max + " " + upper_stopwatch + " | " + lower_stopwatch + " " + lower_stopwatch_max + " ||| " + is_using_upper);
+        // Serial.println(String("S: ") + upper_stopwatch_max + " " + upper_stopwatch + " | " + lower_stopwatch + " " + lower_stopwatch_max + " ||| " + is_using_upper);
     }
 
     void advertising_task(void *pvParameters) {
