@@ -101,7 +101,7 @@ namespace Muse {
 
         while (!_stopping) {
             tick();
-            delay(100);
+            delay(70);
             // set_manufacturer_data(1);
             // delay(100);
         }
