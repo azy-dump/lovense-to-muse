@@ -32,7 +32,7 @@ namespace Lovense {
 
         if (request == "DeviceType;") {
             Serial.println("Responding with device type...");
-            response = "S:11:004B123A2E62;";
+            response = "C:11:0082059AD3BD;";
             
         }
         else if (request.rfind("Vibrate:", 0) == 0) {
@@ -50,6 +50,9 @@ namespace Lovense {
             Serial.println(String("Received vibration level: ") + vibration);
 
             Muse::set_intensity_lovense(vibration);
+        }
+        else if (request == "Battery;") {
+            response = "69;";
         }
         else {
             Serial.println("Unknown request.");

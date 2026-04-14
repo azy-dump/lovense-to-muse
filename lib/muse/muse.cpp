@@ -8,8 +8,7 @@ namespace Muse {
     const char* TAG = "muse";
     uint16_t MANUFACTURER_ID = 0xFFF0;
 
-    uint8_t _intensity_value = 0;
-    uint8_t _last_set_intensity_value = 0;
+    // uint8_t _intensity_value = 0;
 
     bool _stopping = false;
 
@@ -43,6 +42,20 @@ namespace Muse {
     };
 
 
+    int lower_intensity_step = 0;
+    int upper_intensity_step = 1;
+    float upper_length_percent = 0.0F;
+
+    int loop_length_ticks = 5;
+    int upper_stopwatch = 0; // Runs when the upper intensity step is active
+    int lower_stopwatch = 0; // Runs when the lower intensity step is active
+    bool is_using_upper = true;
+
+    int current_lovense_intensity = 0;
+
+    int lovense_intensity_max = 20;
+    int muse_intensity_max = 3;
+
 
     void set_manufacturer_data(uint8_t index) {
         NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
@@ -58,15 +71,39 @@ namespace Muse {
         ESP_LOGD(TAG, "Manufacturer data has been set");
     }
 
+    void tick() {
+        int upper_stopwatch_max = floor(loop_length_ticks * upper_length_percent);
+        int lower_stopwatch_max = loop_length_ticks - upper_stopwatch_max;
+
+        if (is_using_upper) {
+            upper_stopwatch++;
+            if (upper_stopwatch > upper_stopwatch_max) {
+                upper_stopwatch = 0;
+                is_using_upper = false;
+            } else {
+                set_manufacturer_data(upper_intensity_step);
+            }
+        } else {
+            lower_stopwatch++;
+            if (lower_stopwatch > lower_stopwatch_max) {
+                lower_stopwatch = 0;
+                is_using_upper = true;
+            } else {
+                set_manufacturer_data(lower_intensity_step);
+            }
+        }
+
+        // Serial.println(String("S: ") + upper_stopwatch_max + " " + upper_stopwatch + " | " + lower_stopwatch + " " + lower_stopwatch_max + " ||| " + is_using_upper);
+    }
+
     void advertising_task(void *pvParameters) {
         ESP_LOGD(TAG, "Advertising task started");
 
         while (!_stopping) {
-            // if (_last_set_intensity_value != _intensity_value) {
-            set_manufacturer_data(_intensity_value);
-            // _last_set_intensity_value = _intensity_value;
-            // }
-            delay(100);
+            tick();
+            delay(70);
+            // set_manufacturer_data(_intensity_value);
+            // delay(100);
         }
         
         // advertise stop all channels for a little while
@@ -78,28 +115,55 @@ namespace Muse {
     }
 
     void set_intensity_lovense(int lovense_intensity) {
-        set_intensity(static_cast<float>(lovense_intensity) / 20.0F);
-    }
-
-    void set_intensity(float intensity_percent) {
-        // Convert the intensity percent to a value between 0 and 4
-        _intensity_value = static_cast<uint8_t>(std::floor(intensity_percent * 4.0f));
-
-        if (intensity_percent < 0.0) {
-            Serial.println("Intensity smaller than 0.0, received, cutting at 0.0");
-            _intensity_value = 0;
-        } else if (intensity_percent > 1.0) {
-            Serial.println("Intensity larger than 1.0, received, cutting at 1.0.");
-            _intensity_value = 3;
-        } else if (isnan(intensity_percent)) {
-            Serial.println("Intensity NaN, received, cutting at 0.0");
-            _intensity_value = 0;
+        if (lovense_intensity < 0) {
+            Serial.println("Intensity smaller than 0 received! Setting back to 0.");
+            lovense_intensity = 0;
+        } else if (lovense_intensity > lovense_intensity_max) {
+            Serial.println(String("Intensity greater than ") + lovense_intensity_max + " received! Setting to max.");
+            lovense_intensity = lovense_intensity_max;
+        } else if (isnan(lovense_intensity)) {
+            Serial.println("Intensity NaN received, not doing anything.");
+            return;
         }
 
-        if (_intensity_value == 4) _intensity_value = 3;
+        Serial.println(String("Setting intensity to: ") + lovense_intensity);
 
-        Serial.println(String("Percent: ") + intensity_percent + ", MuSe Vibration: " + _intensity_value);
+        if (lovense_intensity == lovense_intensity_max) {
+            lower_intensity_step = muse_intensity_max;
+            upper_intensity_step = muse_intensity_max;
+            upper_length_percent = 1.0F;
+            return;
+        }
+
+        float progress = (static_cast<float>(lovense_intensity) / static_cast<float>(lovense_intensity_max)) * muse_intensity_max;
+        lower_intensity_step = std::floor(progress);
+        upper_intensity_step = lower_intensity_step + 1;
+        upper_length_percent = progress - lower_intensity_step;
+
+
+        
+        // set_intensity(static_cast<float>(lovense_intensity) / 20.0F);
     }
+
+    // void set_intensity(float intensity_percent) {
+    //     // Convert the intensity percent to a value between 0 and 4
+    //     _intensity_value = static_cast<uint8_t>(std::floor(intensity_percent * 4.0f));
+
+    //     if (intensity_percent < 0.0) {
+    //         Serial.println("Intensity smaller than 0.0, received, cutting at 0.0");
+    //         _intensity_value = 0;
+    //     } else if (intensity_percent > 1.0) {
+    //         Serial.println("Intensity larger than 1.0, received, cutting at 1.0.");
+    //         _intensity_value = 3;
+    //     } else if (isnan(intensity_percent)) {
+    //         Serial.println("Intensity NaN, received, cutting at 0.0");
+    //         _intensity_value = 0;
+    //     }
+
+    //     if (_intensity_value == 4) _intensity_value = 3;
+
+    //     Serial.println(String("Percent: ") + intensity_percent + ", MuSe Vibration: " + _intensity_value);
+    // }
 
     void muse_init() {
         ESP_LOGD(TAG, "Initializing muse");

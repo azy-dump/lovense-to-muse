@@ -15,7 +15,6 @@ namespace Muse {
     extern uint16_t MANUFACTURER_ID;
 
     extern uint8_t _intensity_value;
-    extern uint8_t _last_set_intensity_value;
 
     extern bool _stopping;
 
@@ -27,7 +26,7 @@ namespace Muse {
     void advertising_task(void *pvParameters);
 
     void set_intensity_lovense(int lovense_intensity);
-    void set_intensity(float intensity_percent);
+    // void set_intensity(float intensity_percent);
 
     void muse_init();
 }
