@@ -32,8 +32,14 @@ namespace Lovense {
 
         if (request == "DeviceType;") {
             Serial.println("Responding with device type...");
-            response = "C:11:0082059AD3BD;";
-            
+
+            std::string firmwareVersion = "11";
+            std::string deviceType = "S";
+            uint8_t mac[6];
+            esp_read_mac(mac, ESP_MAC_WIFI_STA);
+            char macAddressStr[18];
+            sprintf(macAddressStr, "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+            response = deviceType + ":" + firmwareVersion + ":" + macAddressStr + ";";
         }
         else if (request.rfind("Vibrate:", 0) == 0) {
             Serial.println("Setting vibration level...");
