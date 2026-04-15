@@ -5,13 +5,13 @@
 #include <NimBLEDevice.h>
 
 
-// Currently emulating the Lovense Lush (v1).
+// Currently emulating the Lovense Nora.
 
-#define LOVENSE_SERVICE_UUID "45440001-0023-4BD4-BBD5-A6920E4C5653"
-#define LOVENSE_CHAR_TX_UUID "45440003-0023-4BD4-BBD5-A6920E4C5653"
-#define LOVENSE_CHAR_RX_UUID "45440002-0023-4BD4-BBD5-A6920E4C5653"
+#define LOVENSE_SERVICE_UUID "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
+#define LOVENSE_CHAR_TX_UUID "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+#define LOVENSE_CHAR_RX_UUID "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
 
-#define LOVENSE_NAME "LVS-Lush11"
+#define LOVENSE_NAME "LVS-Nora-Two"
 
 
 
