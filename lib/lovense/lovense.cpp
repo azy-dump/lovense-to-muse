@@ -33,7 +33,6 @@ namespace Lovense {
         if (request == "DeviceType;") {
             Serial.println("Responding with device type...");
             response = "C:11:0082059AD3BD;";
-            
         }
         else if (request.rfind("Vibrate:", 0) == 0) {
             Serial.println("Setting vibration level...");

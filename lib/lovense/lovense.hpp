@@ -5,7 +5,7 @@
 #include <NimBLEDevice.h>
 
 
-// Currently emulating the Lovense Lush (v1).
+// Currently emulating the Lovense Nora.
 
 #define LOVENSE_SERVICE_UUID "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 #define LOVENSE_CHAR_TX_UUID "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
